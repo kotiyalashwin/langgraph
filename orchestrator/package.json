@@ -1,0 +1,17 @@
+{
+  "name": "orchestrator",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.0.5",
+    "@langchain/google-genai": "^1.0.1",
+    "@langchain/langgraph": "^1.0.2"
+  }
+}
