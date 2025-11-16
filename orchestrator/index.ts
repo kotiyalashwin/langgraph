@@ -1,26 +1,16 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import * as z from "zod";
-import { changeSchema, changesSchema, verifiedSchema } from "./schema";
-import {registry} from  "@langchain/langgraph/zod"
+import {
+  changesSchema,
+  GraphState,
+  verifiedSchema,
+  WorkerState,
+} from "./schema";
 import { Send, StateGraph } from "@langchain/langgraph";
+import { promises as fs } from "fs";
+import path, { parse } from "path";
 const llm = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash",
-  apiKey: "",
-});
-
-const GraphState = z.object({
-  prompt: z.string(),
-  changes: changesSchema,
-  verified: z.array(verifiedSchema).register(registry,{
-        reducer : {
-            fn : (x,y)=> x.concat(y)
-        },
-        default : ()=> [] as z.infer<typeof verifiedSchema>[]
-    })
-});
-
-const WorkerState = z.object({
-  change: changeSchema,
 });
 
 const planner = llm.withStructuredOutput(changesSchema);
@@ -41,9 +31,26 @@ async function plannerNode(state: z.infer<typeof GraphState>) {
 
 //Assigning checking of code to worker
 async function assignerNode(state: z.infer<typeof GraphState>) {
-  return state.changes.changes.map((change) => new Send("verifier", { change }));
+  return state.changes.changes.map(
+    (change) => new Send("verifier", { change }),
+  );
+}
+//assign file writes
+async function writeAssignerNode(state: z.infer<typeof GraphState>) {
+  return state.changes.changes.map((change) => new Send("writer", { change }));
+}
+async function allVerifiedNode(state: z.infer<typeof GraphState>) {
+  if (state.verified.length === state.changes.changes.length)
+    return "__verified__";
+  else return "__not_verified__";
 }
 
+async function writerNode(state: z.infer<typeof WorkerState>) {
+  const { filePath, content } = state.change;
+  const fullPath = path.join("app", filePath);
+  await fs.mkdir(path.dirname(fullPath), { recursive: true });
+  await fs.writeFile(fullPath, content, "utf-8");
+}
 async function verifierNode(state: z.infer<typeof WorkerState>) {
   const result = await verifier.invoke([
     {
@@ -51,23 +58,23 @@ async function verifierNode(state: z.infer<typeof WorkerState>) {
       content:
         "You are a professional code analyzer who can find out any possible bug in the code and give its possible solution also.",
     },
-    { role: "human", content: `Verify this code block: ${state.change.content}` },
+    {
+      role: "human",
+      content: `Verify this code block: ${state.change.content}`,
+    },
   ]);
-    
-    return {verified : result}
-}
 
-//Connect e2b with this
-//write the function for correcting the code, before writing into the sandbox
+  return new Send("writer", { change: state.change });
+}
 
 const agent = new StateGraph(GraphState)
   .addNode("planner", plannerNode)
+  .addNode("writer", writerNode)
+  .addNode("verifier", verifierNode, { ends: ["writer"] })
   .addEdge("__start__", "planner")
-  .addNode("verifier", verifierNode)
   .addConditionalEdges("planner", assignerNode, ["verifier"])
   .compile();
 
 const result = await agent.invoke({ prompt: "Create a todo app" });
 console.log(result.verified);
 console.log(result.changes);
-

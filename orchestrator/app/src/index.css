@@ -1,0 +1,113 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.todo-app-container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.todo-input-section {
+  display: flex;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.todo-input-section input {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.todo-input-section button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.todo-input-section button:hover {
+  background-color: #218838;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-list li {
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.todo-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.todo-list li.completed {
+  background-color: #e0ffe0;
+}
+
+.todo-list li input[type="checkbox"] {
+  margin-right: 15px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.todo-list li span {
+  flex-grow: 1;
+  font-size: 17px;
+  color: #555;
+  word-break: break-word;
+}
+
+.todo-list li.completed span {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.todo-list li button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 15px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.todo-list li button:hover {
+  background-color: #c82333;
+}
